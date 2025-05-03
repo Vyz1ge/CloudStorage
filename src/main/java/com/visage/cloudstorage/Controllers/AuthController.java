@@ -1,12 +1,11 @@
 package com.visage.cloudstorage.Controllers;
 
 
-import com.visage.cloudstorage.DTO.UserResponse;
+import com.visage.cloudstorage.Model.UserResponse;
 import com.visage.cloudstorage.Model.AuthReqest;
 import com.visage.cloudstorage.Model.RegisterReqest;
 import com.visage.cloudstorage.Model.User;
 import com.visage.cloudstorage.Services.AuthService;
-import jakarta.validation.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

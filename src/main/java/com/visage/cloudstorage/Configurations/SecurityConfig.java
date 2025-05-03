@@ -40,25 +40,10 @@ public class SecurityConfig {
                      configuration.setAllowCredentials(true);
                      return configuration;
                  }))
-//                .cors(cors -> cors.configurationSource(request -> {
-//                    CorsConfiguration configuration = new CorsConfiguration();
-//                    // ЯВНО указываем разрешенный источник (ваш фронтенд)
-//                    configuration.setAllowedOrigins(Arrays.asList("http://localhost:8081")); // Используйте List.of(...) для Java 9+
-//                    // Разрешаем нужные методы
-//                    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-//                    // Разрешаем необходимые заголовки (Content-Type обязателен, Authorization может понадобиться)
-//                    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-//                    // !!! РАЗРЕШАЕМ ПЕРЕДАЧУ CREDENTIALS !!!
-//                    configuration.setAllowCredentials(true);
-//                    // Можно добавить maxAge для кэширования preflight запросов
-//                    // configuration.setMaxAge(3600L);
-//                    return configuration;
-//                }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-//                                "/api/user/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
@@ -71,17 +56,6 @@ public class SecurityConfig {
                         .logoutSuccessHandler(((request, response, authentication) -> response
                                 .setStatus(HttpServletResponse.SC_NO_CONTENT)))
                 )
-
-
-
-
-
-//                СЕССИЯ ВЫСТРОЕНА ТАК ЕСЛИ ПРОВЕРЯЮ НА JWT ТОКЕН
-//                .sessionManagement(session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )
-//                .authenticationProvider(authProvider)
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

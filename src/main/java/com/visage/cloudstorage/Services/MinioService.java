@@ -1,6 +1,6 @@
 package com.visage.cloudstorage.Services;
 
-import com.visage.cloudstorage.DTO.FileResource;
+import com.visage.cloudstorage.Model.FileResource;
 import io.minio.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
@@ -19,7 +19,6 @@ public class MinioService {
 
     private final MinioClient minioClient;
 
-
     private String bucketName = "name";
 
     public MinioService(MinioClient minioClient) {
@@ -27,7 +26,7 @@ public class MinioService {
     }
 
     @PostConstruct
-    public void ensureBucketExists() throws Exception {  // СОЗДАНИЕ ХРАНИЛИЩА ЕСЛИ ЕГО НЕ СУЩЕСТВУЕТ
+    public void ensureBucketExists() throws Exception {
         boolean exists = minioClient.bucketExists(BucketExistsArgs.builder()
                 .bucket(bucketName)
                 .build());
@@ -39,14 +38,14 @@ public class MinioService {
         }
     }
 
-    public InputStream getObject(String path) throws Exception { // ПОЛУЧЕНИЕ ОБЪЕКТА ПО АДРЕСУ
+    public InputStream getObject(String path) throws Exception {
         return minioClient.getObject(GetObjectArgs.builder()
                 .bucket(bucketName)
                 .object(path)
                 .build());
     }
 
-    public Iterable<Result<Item>> getObjects(String path, boolean recursive) { // ПОЛУЧЕНИЕ СПИСКА ОБЪЕКТОВ ИЗ ПАПКИ
+    public Iterable<Result<Item>> getObjects(String path, boolean recursive) {
         return minioClient.listObjects(ListObjectsArgs.builder()
                 .bucket(bucketName)
                 .prefix(path)
@@ -54,18 +53,17 @@ public class MinioService {
                 .build());
     }
 
-
-    public FileResource metadataObject(String path,Integer userId) throws Exception { // ПОЛУЧЕНИЕ МЕТАДАННЫХ ОБЪЕКТА ПО АДРЕСУ
+    public FileResource metadataObject(String path, Integer userId) throws Exception {
         StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder()
                 .bucket(bucketName)
                 .object(path)
                 .build());
-        int idx  = path.indexOf("/");
+        int idx = path.indexOf("/");
         String name;
-        if (idx == -1){
+        if (idx == -1) {
             name = path;
         } else {
-            name = path.substring(0,idx+1);
+            name = path.substring(0, idx + 1);
         }
         return FileResource.builder()
                 .path(path)
@@ -75,8 +73,7 @@ public class MinioService {
                 .build();
     }
 
-
-    public void removeObject(String path) throws Exception { // УДАЛИТЬ ОБЪЕКТ ПО АДРЕСУ
+    public void removeObject(String path) throws Exception {
         minioClient.removeObject(RemoveObjectArgs.builder()
                 .bucket(bucketName)
                 .object(path)
@@ -113,17 +110,17 @@ public class MinioService {
         }
     }
 
-    public void upload(InputStream input, String completePath, MultipartFile file) throws Exception { // ЗАПИСЬ
+    public void upload(InputStream input, String completePath, MultipartFile file) throws Exception {
         String objectName = completePath + file.getOriginalFilename();
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .stream(input, file.getSize(), -1)
-                    .contentType(file.getContentType())
-                    .build());
+        minioClient.putObject(PutObjectArgs.builder()
+                .bucket(bucketName)
+                .object(objectName)
+                .stream(input, file.getSize(), -1)
+                .contentType(file.getContentType())
+                .build());
     }
 
-    public void copy(String oldCompletePath, String newCompletePath) throws Exception {  // КООПИРОВАНИЕ ОБЪЕКТА
+    public void copy(String oldCompletePath, String newCompletePath) throws Exception {
         minioClient.copyObject(CopyObjectArgs.builder()
                 .bucket(bucketName)
                 .object(newCompletePath)
@@ -134,13 +131,12 @@ public class MinioService {
                 .build());
     }
 
-    public void createEmptyDirectory(String path) throws Exception { // СОЗДАНИЕ ПАПКИ
+    public void createEmptyDirectory(String path) throws Exception {
         minioClient.putObject(PutObjectArgs.builder()
                 .bucket(bucketName)
                 .object(path)
                 .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                 .build());
     }
-
 
 }

@@ -1,4 +1,4 @@
-package com.visage.cloudstorage.DTO;
+package com.visage.cloudstorage.Model;
 
 
 

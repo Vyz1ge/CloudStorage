@@ -12,9 +12,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-
-
-
     public UserDetailsService getUsername(){
         return username -> userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
     }

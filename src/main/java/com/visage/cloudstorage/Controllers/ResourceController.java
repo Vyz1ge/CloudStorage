@@ -1,11 +1,9 @@
 package com.visage.cloudstorage.Controllers;
 
-import com.visage.cloudstorage.DTO.FileResource;
+import com.visage.cloudstorage.Model.FileResource;
 import com.visage.cloudstorage.Exceptions.DataNotFoundException;
 import com.visage.cloudstorage.Model.User;
-import com.visage.cloudstorage.Services.MinioService;
 import com.visage.cloudstorage.Services.ResourceService;
-import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -14,9 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @RestController

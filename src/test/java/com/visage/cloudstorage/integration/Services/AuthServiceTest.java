@@ -1,7 +1,6 @@
 package com.visage.cloudstorage.integration.Services;
 
-
-import com.visage.cloudstorage.DTO.UserResponse;
+import com.visage.cloudstorage.Model.UserResponse;
 import com.visage.cloudstorage.Model.AuthReqest;
 import com.visage.cloudstorage.Model.RegisterReqest;
 import com.visage.cloudstorage.Model.Role;
@@ -49,22 +48,16 @@ public class AuthServiceTest {
         registry.add("spring.datasource.username", postgres::getPassword);
     }
 
-
     @Test
     public void shouldBeRegister() {
-        // Arrange
         RegisterReqest registerReqest = RegisterReqest.builder()
                 .username("username")
                 .password("password")
                 .build();
-        // Act
         UserResponse userResponse = authService.register(registerReqest);
-
-        // Asserts
         assertNotNull(userResponse.username(),"Юзернейм не нулл");
         Optional<User> optionalExpectedUser = userRepository.findByUsername(registerReqest.getUsername());
         assertTrue(optionalExpectedUser.isPresent());
-
         User expectedUser = optionalExpectedUser.get();
         assertEquals(expectedUser.getUsername(), userResponse.username());
         assertEquals(Role.USER, expectedUser.getRole());
@@ -74,11 +67,9 @@ public class AuthServiceTest {
 
     @Test
     void shouldBeLoginAndNotRegister(){
-        // Arrange
         AuthReqest authReqest = new AuthReqest();
         authReqest.setUsername("Some user");
         authReqest.setPassword("Some pass");
-        // act
         assertThrows(BadCredentialsException.class, () -> authService.auth(authReqest));
     }
 
@@ -93,23 +84,18 @@ public class AuthServiceTest {
                 .username("username")
                 .password("password")
                 .build();
-        // Act
         UserResponse userResponse = authService.register(register);
         AuthReqest authReqest = new AuthReqest();
         authReqest.setUsername("username");
         authReqest.setPassword("password");
-
-        // act
         assertNotNull(userResponse.username(),"Юзернейм не нулл");
         Optional<User> optionalExpectedUser = userRepository.findByUsername(userResponse.username());
         assertTrue(optionalExpectedUser.isPresent());
-
         User expectedUser = optionalExpectedUser.get();
         assertEquals(expectedUser.getUsername(), userResponse.username());
         assertEquals(Role.USER, expectedUser.getRole());
         assertNotEquals(userResponse.username(), expectedUser.getPassword());
     }
-
 
     @Test
     void shouldNotRegisterUserWithExistingUsername() {
@@ -118,14 +104,10 @@ public class AuthServiceTest {
                 .password("password1")
                 .build();
         authService.register(registerReqest);
-
         RegisterReqest duplicateReqest = RegisterReqest.builder()
                 .username("duplicateUser")
                 .password("password2")
                 .build();
         assertThrows(Exception.class, () -> authService.register(duplicateReqest));
     }
-
-
-
 }

@@ -1,7 +1,6 @@
 package com.visage.cloudstorage.integration.Controllers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.visage.cloudstorage.Configurations.SecurityConfig;
 import com.visage.cloudstorage.Model.AuthReqest;
@@ -11,7 +10,6 @@ import com.visage.cloudstorage.Model.User;
 import com.visage.cloudstorage.Repositories.UserRepository;
 import com.visage.cloudstorage.Services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -44,8 +42,6 @@ public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -53,8 +49,6 @@ public class AuthControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private SecurityConfig securityConfig;
     @Autowired
     private ObjectMapper objectMapper;
 
