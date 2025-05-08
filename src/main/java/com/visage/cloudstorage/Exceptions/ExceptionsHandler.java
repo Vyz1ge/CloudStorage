@@ -31,7 +31,8 @@ public class ExceptionsHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(){
+    public ResponseEntity<?> handleException(Exception e){
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
                 .status(500)
                 .message("Неизвестная ошибка")
@@ -44,6 +45,16 @@ public class ExceptionsHandler {
                 .status(404)
                 .message(e.getMessage())
                 .build());
+    }
+
+    @ExceptionHandler(NotCorrectNameFileOrPackage.class)
+    public ResponseEntity<?> notCorrectNameFileOrPackage(){
+        System.out.println("Офицал ошибка");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
+                .status(409)
+                .message("Такое имя файла уже существует")
+                .build());
+
     }
 
 

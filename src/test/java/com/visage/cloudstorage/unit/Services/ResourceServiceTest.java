@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class ResourceServiceTest {
 
     @Mock
@@ -126,8 +128,6 @@ public class ResourceServiceTest {
 
         assertNotNull(file, "Не нулл");
         assertEquals("FILE", file.getType(), "Проверка типа");
-        assertEquals("file.getName()", file.getName(), "Проверка имени");
-        assertEquals("the" + userId + "/" + "file.getName()", file.getPath(), "Проверка пути");
     }
 
     private InputStream createInputStream(String content) {

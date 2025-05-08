@@ -26,6 +26,7 @@ public class ResourceController {
         try {
             return ResponseEntity.ok().body(resourceService.resource(user.getId(),path));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -44,7 +45,7 @@ public class ResourceController {
     public ResponseEntity<FileResource> createPackage(@RequestParam("path") String path, @AuthenticationPrincipal User user)  {
 
         try {
-            return ResponseEntity.ok().body(resourceService.createPackage(path, user.getId()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.createPackage(path, user.getId()));
         } catch (Exception e) {
             throw new DataNotFoundException("Ресурс не найден");
         }
@@ -69,24 +70,8 @@ public class ResourceController {
         } catch (Exception e) {
             throw new DataNotFoundException("Ресурс не найден");
         }
-        String base = "the" + user.getId() + "/" + path;
-        String prefix;
-        if (base.endsWith("/")){
-            prefix = base;
-        }else {
-            prefix = base + "/";
-        }
-        int idx  = path.indexOf("/");
-        String name;
-        if (idx == -1){
-            name = path;
-        } else {
-            name = path.substring(0,idx+1);
-        }
-
-        ContentDisposition contentDisposition = ContentDisposition.attachment().filename(prefix+name).build();
-
-        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_OCTET_STREAM)
+        ContentDisposition contentDisposition = ContentDisposition.attachment().filename(path).build();
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
                 .body(object);
     }
@@ -98,7 +83,7 @@ public class ResourceController {
 
 
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(resourceService.moveResoutce(from,to,user.getId()));
+            return ResponseEntity.ok().body(resourceService.moveResoutce(from,to,user.getId()));
         } catch (Exception e) {
             throw new DataNotFoundException("Ресурс не найден");
         }
@@ -122,7 +107,7 @@ public class ResourceController {
                                      @AuthenticationPrincipal User user) {
 
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(resourceService.searchResource(query,user.getId()));
+            return ResponseEntity.ok().body(resourceService.searchResource(query,user.getId()));
         } catch (Exception e) {
             throw new DataNotFoundException("Ресурс не найден");
         }

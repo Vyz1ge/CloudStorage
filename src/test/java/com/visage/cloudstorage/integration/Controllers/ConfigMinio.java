@@ -1,5 +1,4 @@
-package com.visage.cloudstorage.Configurations;
-
+package com.visage.cloudstorage.integration.Controllers;
 
 import io.minio.MinioClient;
 import lombok.AllArgsConstructor;
@@ -9,15 +8,13 @@ import org.springframework.context.annotation.Profile;
 
 
 @Configuration
-@Profile("!test")
-//@AllArgsConstructor
 public class ConfigMinio {
 
     @Bean
     public MinioClient minioClient(){
         return MinioClient.builder()
                 .endpoint("http://localhost:9000")
-                .credentials("minio", "miniominio")
+                .credentials("minioadmin", "minioadmin")
                 .build();
     }
 

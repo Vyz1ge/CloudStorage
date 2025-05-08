@@ -35,7 +35,7 @@ public class AuthController {
         if (reqest.getUsername().length() < 5){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.OK).body(service.auth(reqest));
+        return ResponseEntity.ok().body(service.auth(reqest));
     }
     @PostMapping("/auth/sign-out")
     public ResponseEntity<Void> unregister(@AuthenticationPrincipal User user){
@@ -47,6 +47,6 @@ public class AuthController {
     @GetMapping("/user/me")
     public ResponseEntity<UserResponse> pingSession(@AuthenticationPrincipal UserDetails userDetails){
         UserResponse userResponse = new UserResponse(userDetails.getUsername());
-        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+        return ResponseEntity.ok().body(userResponse);
     }
 }

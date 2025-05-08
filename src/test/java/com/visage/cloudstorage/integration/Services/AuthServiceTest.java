@@ -7,14 +7,19 @@ import com.visage.cloudstorage.Model.Role;
 import com.visage.cloudstorage.Model.User;
 import com.visage.cloudstorage.Repositories.UserRepository;
 import com.visage.cloudstorage.Services.AuthService;
+import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -23,11 +28,17 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 
-@Testcontainers
 @SpringBootTest
+@Testcontainers
+@ActiveProfiles("test")
 public class AuthServiceTest {
     @Container
+    @ServiceConnection
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
+
+
+    @MockitoBean
+    private MinioClient minioClient;
 
     @Autowired
     private UserRepository userRepository;
@@ -36,17 +47,18 @@ public class AuthServiceTest {
     @Autowired
     private AuthService authService;
 
+
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
     }
 
-    @DynamicPropertySource
-    static void datasourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.password", postgres::getUsername);
-        registry.add("spring.datasource.username", postgres::getPassword);
-    }
+//    @DynamicPropertySource
+//    static void datasourceProperties(DynamicPropertyRegistry registry) {
+//        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+//        registry.add("spring.datasource.password", postgres::getUsername);
+//        registry.add("spring.datasource.username", postgres::getPassword);
+//    }
 
     @Test
     public void shouldBeRegister() {

@@ -1,48 +1,58 @@
 package com.visage.cloudstorage.integration.Services;
 
 
+import com.visage.cloudstorage.CloudStorageApplication;
 import com.visage.cloudstorage.Model.Role;
 import com.visage.cloudstorage.Model.User;
 import com.visage.cloudstorage.Repositories.UserRepository;
 import com.visage.cloudstorage.Services.UserService;
+import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Testcontainers
 @SpringBootTest
+@Testcontainers
+@ActiveProfiles("test")
 public class UserServiceTest {
+
+
     @Container
+    @ServiceConnection
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
+//            .withDatabaseName("testBase")
+//            .withUsername("test")
+//            .withPassword("test");
+
+    @MockitoBean
+    private MinioClient minioClient;
+
 
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserService userService;
-
-    @BeforeEach
+        @BeforeEach
     void setUp(){
         userRepository.deleteAll();
     }
 
-    @DynamicPropertySource
-    static void datasourceProperties(DynamicPropertyRegistry registry){
-        registry.add("spring.datasource.url",postgres::getJdbcUrl);
-        registry.add("spring.datasource.password",postgres::getUsername);
-        registry.add("spring.datasource.username",postgres::getPassword);
-    }
+    @Autowired
+    private UserService userService;
 
     @Test
     public void getUsernameTest(){
@@ -64,6 +74,5 @@ public class UserServiceTest {
         UserDetailsService userDetailsService = userService.getUsername();
         assertThrows(UsernameNotFoundException.class,() -> userDetailsService.loadUserByUsername("Username"));
     }
-
-
 }
+

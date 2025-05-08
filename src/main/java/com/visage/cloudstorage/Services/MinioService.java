@@ -2,15 +2,20 @@ package com.visage.cloudstorage.Services;
 
 import com.visage.cloudstorage.Model.FileResource;
 import io.minio.*;
+import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +30,7 @@ public class MinioService {
         this.minioClient = minioClient;
     }
 
+    @Profile("!test")
     @PostConstruct
     public void ensureBucketExists() throws Exception {
         boolean exists = minioClient.bucketExists(BucketExistsArgs.builder()
@@ -55,9 +61,9 @@ public class MinioService {
 
     public FileResource metadataObject(String path, Integer userId) throws Exception {
         StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder()
-                .bucket(bucketName)
-                .object(path)
-                .build());
+                    .bucket(bucketName)
+                    .object(path)
+                    .build());
         int idx = path.indexOf("/");
         String name;
         if (idx == -1) {
@@ -65,10 +71,24 @@ public class MinioService {
         } else {
             name = path.substring(0, idx + 1);
         }
+
+
+        String type;
+        if (statObjectResponse != null) {
+            type = statObjectResponse.contentType();
+        }else {
+            type = null;
+        }
+        long size = 0;
+        if (type != null) {
+            if (type.equals("FILE")) {
+                size = statObjectResponse.size();
+            }
+        }
         return FileResource.builder()
                 .path(path)
-                .size(statObjectResponse.size())
-                .type(statObjectResponse.contentType())
+                .size(size)
+                .type(type)
                 .name(name)
                 .build();
     }
