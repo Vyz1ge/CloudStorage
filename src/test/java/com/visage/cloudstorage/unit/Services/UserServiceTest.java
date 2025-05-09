@@ -51,7 +51,7 @@ public class UserServiceTest {
         String username = "Username";
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
         UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername(username),"Выбрашена ошибка");
-            assertEquals("User Not Found",exception.getMessage(), " Проверка совпадает ли сигнатура ошибки");
+        assertEquals("User Not Found",exception.getMessage(), " Проверка совпадает ли сигнатура ошибки");
         verify(userRepository,times(1)).findByUsername(username);
         verifyNoMoreInteractions(userRepository);
     }

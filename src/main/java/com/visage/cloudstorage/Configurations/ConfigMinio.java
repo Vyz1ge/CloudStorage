@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("!test")
-//@AllArgsConstructor
 public class ConfigMinio {
 
     @Bean

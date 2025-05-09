@@ -1,9 +1,7 @@
 package com.visage.cloudstorage.Exceptions;
 
 import com.visage.cloudstorage.Model.ErrorResponse;
-import org.springframework.boot.context.config.ConfigDataNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -49,7 +47,6 @@ public class ExceptionsHandler {
 
     @ExceptionHandler(NotCorrectNameFileOrPackage.class)
     public ResponseEntity<?> notCorrectNameFileOrPackage(){
-        System.out.println("Офицал ошибка");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
                 .status(409)
                 .message("Такое имя файла уже существует")

@@ -21,7 +21,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Service
 @Transactional
 public class AuthService {
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;

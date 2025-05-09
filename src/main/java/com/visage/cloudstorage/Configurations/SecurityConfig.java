@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -33,13 +32,13 @@ public class SecurityConfig {
 
         http
                 .cors(cors -> cors.configurationSource(request -> {
-                     CorsConfiguration configuration = new CorsConfiguration();
-                     configuration.addAllowedOriginPattern("*");
-                     configuration.addAllowedMethod("*");
-                     configuration.addAllowedHeader("*");
-                     configuration.setAllowCredentials(true);
-                     return configuration;
-                 }))
+                    CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.addAllowedOriginPattern("*");
+                    configuration.addAllowedMethod("*");
+                    configuration.addAllowedHeader("*");
+                    configuration.setAllowCredentials(true);
+                    return configuration;
+                }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -82,4 +81,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

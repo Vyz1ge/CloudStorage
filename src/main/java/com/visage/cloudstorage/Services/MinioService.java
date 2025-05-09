@@ -57,9 +57,9 @@ public class MinioService {
 
     public FileResource metadataObject(String path, Integer userId) throws Exception {
         StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(path)
-                    .build());
+                .bucket(bucketName)
+                .object(path)
+                .build());
         int idx = path.indexOf("/");
         String name;
         if (idx == -1) {

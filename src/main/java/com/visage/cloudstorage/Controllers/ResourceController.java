@@ -104,7 +104,7 @@ public class ResourceController {
 
     @GetMapping("/resource/search")
     public ResponseEntity<List<FileResource>> search(@RequestParam("query") String query,
-                                     @AuthenticationPrincipal User user) {
+                                                     @AuthenticationPrincipal User user) {
 
         try {
             return ResponseEntity.ok().body(resourceService.searchResource(query,user.getId()));

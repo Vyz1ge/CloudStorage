@@ -1,16 +1,13 @@
 package com.visage.cloudstorage.integration.Services;
 
 
-import com.visage.cloudstorage.CloudStorageApplication;
 import com.visage.cloudstorage.Model.Role;
 import com.visage.cloudstorage.Model.User;
 import com.visage.cloudstorage.Repositories.UserRepository;
 import com.visage.cloudstorage.Services.UserService;
 import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -18,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,9 +31,6 @@ public class UserServiceTest {
     @Container
     @ServiceConnection
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
-//            .withDatabaseName("testBase")
-//            .withUsername("test")
-//            .withPassword("test");
 
     @MockitoBean
     private MinioClient minioClient;
@@ -46,7 +39,7 @@ public class UserServiceTest {
     @Autowired
     private UserRepository userRepository;
 
-        @BeforeEach
+    @BeforeEach
     void setUp(){
         userRepository.deleteAll();
     }
@@ -64,8 +57,8 @@ public class UserServiceTest {
         userRepository.save(user);
         UserDetailsService userDetailsService = userService.getUsername();
 
-        UserDetails loadeduserDetails = assertDoesNotThrow(() -> userDetailsService.loadUserByUsername("Username"),"Не выбрасывается");
-        assertNotNull(loadeduserDetails.getUsername(),"Загруженный юзер не может быть пустым");
+        UserDetails loadeduserDetails = assertDoesNotThrow(() -> userDetailsService.loadUserByUsername("Username"));
+        assertNotNull(loadeduserDetails.getUsername());
         assertEquals("Username",loadeduserDetails.getUsername());
     }
 
@@ -75,4 +68,3 @@ public class UserServiceTest {
         assertThrows(UsernameNotFoundException.class,() -> userDetailsService.loadUserByUsername("Username"));
     }
 }
-

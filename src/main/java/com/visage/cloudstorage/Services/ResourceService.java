@@ -115,7 +115,7 @@ public class ResourceService {
                     .size(file.getSize())
                     .type("FILE")
                     .build();
-            if (files.size() > 1) {
+            if (files.size() > 1) { // баг если папка в папке будет то она заменится и ошибка не отработает
                 String name = fileResource.getName();
                 String[] split = name.split("");
                 int count = 0;
@@ -134,9 +134,7 @@ public class ResourceService {
                         flag = false;
                     }
                 }
-                System.out.println(trueName + " trueName");
-                // баг если папка в папке будет то она заменится и ошибка не отработает
-                System.out.println(base + trueName);
+
                 try {
                     fileResourceNotExists = minioService.metadataObject(base + trueName + "/", userId);
                 } catch (Exception e) {}
