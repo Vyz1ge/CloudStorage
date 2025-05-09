@@ -5,6 +5,7 @@ import com.visage.cloudstorage.Services.MinioService;
 import com.visage.cloudstorage.Services.ResourceService;
 import io.minio.Result;
 import io.minio.messages.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 public class ResourceServiceTest {
@@ -108,12 +110,12 @@ public class ResourceServiceTest {
     void shouldBeCreatePackage() throws Exception {
         int userId = 1;
         String name = "somename";
-        FileResource packageResource = resourceService.createPackage(name, userId);
-
-        assertNotNull(packageResource, "Не нулл");
-        assertEquals("DIRECTORY", packageResource.getType(), "Проверка типа");
-        assertEquals(name, packageResource.getName(), "Проверка имени");
-        assertEquals("the1/", packageResource.getPath(), "Проверка пути");
+        List<FileResource> list = resourceService.createPackage(name, userId);
+        assertNotNull(list, "Не нулл");
+        assertNotNull(list.get(0), "Не нулл");
+        assertEquals("DIRECTORY", list.get(0).getType(), "Проверка типа");
+        assertEquals(name, list.get(0).getName(), "Проверка имени");
+        assertEquals("the1/", list.get(0).getPath(), "Проверка пути");
     }
 
     @Test

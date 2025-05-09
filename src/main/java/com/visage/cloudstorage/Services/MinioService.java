@@ -2,7 +2,6 @@ package com.visage.cloudstorage.Services;
 
 import com.visage.cloudstorage.Model.FileResource;
 import io.minio.*;
-import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -12,10 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +28,7 @@ public class MinioService {
 
     @Profile("!test")
     @PostConstruct
-    public void ensureBucketExists() throws Exception {
+    public void createBucketForUser() throws Exception {
         boolean exists = minioClient.bucketExists(BucketExistsArgs.builder()
                 .bucket(bucketName)
                 .build());
@@ -151,7 +147,7 @@ public class MinioService {
                 .build());
     }
 
-    public void createEmptyDirectory(String path) throws Exception {
+    public void createDirectory(String path) throws Exception {
         minioClient.putObject(PutObjectArgs.builder()
                 .bucket(bucketName)
                 .object(path)

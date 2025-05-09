@@ -1,5 +1,6 @@
 package com.visage.cloudstorage.Services;
 
+import com.visage.cloudstorage.Exceptions.DataNotFoundException;
 import com.visage.cloudstorage.Exceptions.NotCorrectNameFileOrPackage;
 import com.visage.cloudstorage.Model.FileResource;
 import io.minio.Result;
@@ -18,7 +19,6 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -80,15 +80,17 @@ public class ResourceService {
         return fileResourceList;
     }
 
-    public FileResource createPackage(String name, Integer userId) throws Exception {
+    public List<FileResource> createPackage(String name, Integer userId) throws Exception {
+        List<FileResource> list = new ArrayList<>();
         String path = "the" + userId + "/" + name;
-        minioService.createEmptyDirectory(path);
-        FileResource fileResourceNotExists = minioService.metadataObject(path, userId);
-        return FileResource.builder()
+        minioService.createDirectory(path);
+        FileResource directory = FileResource.builder()
                 .type("DIRECTORY")
                 .name(name)
                 .path("the" + userId + "/")
                 .build();
+        list.add(directory);
+        return list;
     }
 
     public FileResource createFile(List<MultipartFile> files, Integer userId, String path) {
@@ -103,6 +105,7 @@ public class ResourceService {
                 throw new NotCorrectNameFileOrPackage("Такое имя файла уже существует");
             }
         }
+        boolean flag = true;
         FileResource fileResource = null;
         StringBuilder trueName = new StringBuilder();
         for (MultipartFile file : files) {
@@ -116,15 +119,19 @@ public class ResourceService {
                 String name = fileResource.getName();
                 String[] split = name.split("");
                 int count = 0;
-                for (int i = split.length - 1; i >= 0; i--) {
-                    if (count == 1) {
-                        if (split[i].equals("/")) {
-                            break;
+                if (flag) {
+                    for (int i = split.length - 1; i >= 0; i--) {
+                        if (count == 1) {
+                            if (split[i].equals("/")) {
+                                flag = false;
+                                break;
+                            }
+                            trueName.insert(0, split[i]);
                         }
-                        trueName.insert(0, split[i]);
-                    }
-                    if (split[i].equals("/")) {
-                        count++;
+                        if (split[i].equals("/")) {
+                            count++;
+                        }
+                        flag = false;
                     }
                 }
                 System.out.println(trueName + " trueName");
@@ -188,13 +195,16 @@ public class ResourceService {
     public void createTheCentralPoint(Integer userId) {
         String path = "the" + userId + "/";
         try {
-            minioService.createEmptyDirectory(path);
+            minioService.createDirectory(path);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public FileResource moveResoutce(String from, String to, Integer userId) throws Exception {
+        if (!to.startsWith("t")){
+            throw new DataNotFoundException("Обнови страницу");
+        }
         if (!from.endsWith("/")) {
             minioService.copy(from, to);
             minioService.removeObject(from);

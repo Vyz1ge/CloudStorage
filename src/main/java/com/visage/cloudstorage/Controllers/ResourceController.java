@@ -42,7 +42,7 @@ public class ResourceController {
 
 
     @PostMapping("/directory")
-    public ResponseEntity<FileResource> createPackage(@RequestParam("path") String path, @AuthenticationPrincipal User user)  {
+    public ResponseEntity<List<FileResource>> createPackage(@RequestParam("path") String path, @AuthenticationPrincipal User user)  {
 
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.createPackage(path, user.getId()));
