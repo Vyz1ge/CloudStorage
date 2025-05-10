@@ -1,10 +1,7 @@
 package com.visage.cloudstorage.Controllers;
 
 
-import com.visage.cloudstorage.Model.UserResponse;
-import com.visage.cloudstorage.Model.AuthReqest;
-import com.visage.cloudstorage.Model.RegisterReqest;
-import com.visage.cloudstorage.Model.User;
+import com.visage.cloudstorage.Model.*;
 import com.visage.cloudstorage.Services.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,29 +20,26 @@ public class AuthController {
     }
 
     @PostMapping("/auth/sign-up")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterReqest reqest) {
+    public ResponseEntity<?> register(@RequestBody RegisterReqest reqest) {
         if (reqest.getUsername().length() < 5){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.builder().status(400).message("Ошибка валидации имени").build());
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(service.register(reqest));
     }
 
     @PostMapping("/auth/sign-in")
-    public ResponseEntity<UserResponse> login(@RequestBody AuthReqest reqest){
+    public ResponseEntity<?> login(@RequestBody AuthReqest reqest){
         if (reqest.getUsername().length() < 5){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.builder().status(400).message("Ошибка валидации имени").build());
         }
         return ResponseEntity.ok().body(service.auth(reqest));
     }
-    @PostMapping("/auth/sign-out")
-    public ResponseEntity<Void> unregister(@AuthenticationPrincipal User user){
-        if (user == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+
     @GetMapping("/user/me")
-    public ResponseEntity<UserResponse> pingSession(@AuthenticationPrincipal UserDetails userDetails){
+    public ResponseEntity<?> pingSession(@AuthenticationPrincipal UserDetails userDetails){
+        if (userDetails == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse.builder().status(401).message("Пользоватль не авторизован").build());
+        }
         UserResponse userResponse = new UserResponse(userDetails.getUsername());
         return ResponseEntity.ok().body(userResponse);
     }

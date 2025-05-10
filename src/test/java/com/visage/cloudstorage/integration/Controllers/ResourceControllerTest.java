@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @Testcontainers
-@AutoConfigureMockMvc(/*addFilters = false*/)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ResourceControllerTest {
 
@@ -123,12 +123,13 @@ public class ResourceControllerTest {
         mockMvc.perform(get("/api/resource")
                         .param("path", "Some path")
                         .with(user(userTest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
 
     @Test
     void shouldBeLookThisResourceCorrect() throws Exception {
+        minioService.createDirectory("the1/");
         mockMvc.perform(post("/api/directory")
                         .param("path", "testPackage/")
                         .with(user(userTest)))
@@ -155,25 +156,27 @@ public class ResourceControllerTest {
 
     @Test
     void shouldBeLookTheCenterPointResourcePackageCorrect() throws Exception {
+        minioService.createDirectory("the1/");
         mockMvc.perform(post("/api/directory")
-                        .param("path", "testPackage")
+                        .param("path", "testPackage/")
                         .with(user(userTest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.[0].name").value("testPackage"));
+                .andExpect(jsonPath("$.[0].name").value("testPackage/"));
         mockMvc.perform(get("/api/directory")
                         .param("path", "")
                         .with(user(userTest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].name").value("testPackage"));
+                .andExpect(jsonPath("$.[0].name").value("testPackage/"));
     }
 
     @Test
     void shouldBeCreatePackage() throws Exception {
+        minioService.createDirectory("the1/");
         mockMvc.perform(post("/api/directory")
-                        .param("path", "testPackage")
+                        .param("path", "testPackage/")
                         .with(user(userTest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.[0].name").value("testPackage"));
+                .andExpect(jsonPath("$.[0].name").value("testPackage/"));
     }
 
     @Test

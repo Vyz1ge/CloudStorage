@@ -2,12 +2,14 @@ package com.visage.cloudstorage.Services;
 
 import com.visage.cloudstorage.Exceptions.DataNotFoundException;
 import com.visage.cloudstorage.Exceptions.NotCorrectNameFileOrPackage;
+import com.visage.cloudstorage.Exceptions.ParentFileIsAlreadyExists;
 import com.visage.cloudstorage.Model.FileResource;
 import io.minio.Result;
 import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +49,12 @@ public class ResourceService {
         List<FileResource> fileResourceList = new ArrayList<>();
         for (Result<Item> object : objects) {
             FileResource fileResource;
-            Item item = object.get();
+            Item item = null;
+            try {
+                item = object.get();
+            } catch (ErrorResponseException e) {
+                throw new DataNotFoundException("Ресурс не найден");
+            }
             String relative = item.objectName().substring(prefix.length());
             if (relative.isEmpty()) {
                 continue;
@@ -81,8 +88,32 @@ public class ResourceService {
     }
 
     public List<FileResource> createPackage(String name, Integer userId) throws Exception {
-        List<FileResource> list = new ArrayList<>();
         String path = "the" + userId + "/" + name;
+        FileResource fileResource = null;
+        try {
+            fileResource = minioService.metadataObject(path, userId);
+        }catch (Exception e){}
+        if (fileResource != null){
+            throw new NotCorrectNameFileOrPackage("Такой файл уже существует");
+        }
+        String substring = name.substring(0, name.length() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] split = substring.split("");
+        for (int i = substring.length() - 1; i >= 0; i--) {
+            if (split[i].equals("/")){
+                break;
+            }
+            stringBuilder.insert(0, split[i]);
+        }
+        stringBuilder.append("/");
+        String parentPath = path.substring(0,path.length() - stringBuilder.length());
+        try {
+            fileResource = minioService.metadataObject(parentPath, userId);
+        }catch (Exception e){}
+        if (fileResource == null){
+            throw new ParentFileIsAlreadyExists("Родительской папки не существует");
+        }
+        List<FileResource> list = new ArrayList<>();
         minioService.createDirectory(path);
         FileResource directory = FileResource.builder()
                 .type("DIRECTORY")
@@ -154,6 +185,11 @@ public class ResourceService {
         if (files.size() == 1) {
             return fileResource;
         }
+        try {
+            createPackage(trueName+"/",userId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return FileResource.builder()
                 .name(trueName + "/")
                 .path(base)
@@ -162,8 +198,24 @@ public class ResourceService {
     }
 
     public InputStreamResource downloadResource(String path, Integer userId) throws Exception {
+        int count = 0;
+        String[] split = path.split("");
+        for (int i = 0; i < path.length(); i++) {
+            if (split[i].endsWith("/")){
+                break;
+            }
+            count++;
+        }
+        if ((Integer.parseInt(path.substring(3, count)) != userId)){
+            throw new BadCredentialsException("");
+        }
         if (!path.endsWith("/")) {
-            InputStream item = minioService.getObject(path);
+            InputStream item = null;
+            try {
+                item = minioService.getObject(path);
+            } catch (Exception e) {
+                throw new DataNotFoundException("Ресурс не найден");
+            }
             return new InputStreamResource(item);
         }
         String prefix = path;
@@ -199,18 +251,48 @@ public class ResourceService {
         }
     }
 
-    public FileResource moveResoutce(String from, String to, Integer userId) throws Exception {
+    public FileResource moveResoutce(String from, String to, Integer userId) throws Exception { // если создать папку в мейне и создвать папку и поместить в неё папку с названием как у папки в мене то её невозможно будет переместить
         if (!to.startsWith("t")){
-            throw new DataNotFoundException("Обнови страницу");
+            throw new DataNotFoundException("Данные не синхронизированы"); // у фронта небольшой баг
         }
+        FileResource fileResource =  null;
+        try {
+            fileResource = minioService.metadataObject(from, userId);
+        }catch (Exception e){}
+        if (fileResource == null){
+            throw new DataNotFoundException("Ресурс не найден");
+        }
+        fileResource = null;
+        try {
+            fileResource = minioService.metadataObject(to, userId);
+        }catch (Exception e){}
+        if (fileResource != null){
+            throw new NotCorrectNameFileOrPackage("Ресурс уже существует");
+        }
+        StringBuilder nameBuilder = new StringBuilder();
+        String[] split = from.split("");
         if (!from.endsWith("/")) {
+            for (int i = split.length - 1; i > 0; i--){
+                if (split[i].equals("/")){
+                    break;
+                }
+                nameBuilder.insert(0,split[i]);
+            }
             minioService.copy(from, to);
             minioService.removeObject(from);
             return FileResource.builder()
-                    .path("accept")
-                    .name("accept")
+                    .path(to.substring(0, to.length() - nameBuilder.length()))
+                    .name(nameBuilder.toString())
                     .type("FILE")
                     .build();
+        }
+        nameBuilder.insert(0,"/");
+        for (int i = split.length - 2; i > 0; i--){
+            if (split[i].equals("/")){
+                break;
+            }
+
+            nameBuilder.insert(0,split[i]);
         }
         String prefix = from;
         if (!prefix.endsWith("/")) {
@@ -226,13 +308,31 @@ public class ResourceService {
             minioService.removeObject(relativeFrom);
         }
         return FileResource.builder()
-                .path("accept")
-                .name("accept")
+                .path(to.substring(0, to.length() - nameBuilder.length()))
+                .name(nameBuilder.toString())
                 .type("FILE")
                 .build();
     }
 
-    public boolean deleteResource(String path) throws Exception {
+    public boolean deleteResource(String path, Integer id) throws Exception {
+        int count = 0;
+        String[] split = path.split("");
+        for (int i = 0; i < path.length(); i++) {
+            if (split[i].endsWith("/")){
+                break;
+            }
+            count++;
+        }
+        if ((Integer.parseInt(path.substring(3, count)) != id)){
+            throw new BadCredentialsException("");
+        }
+        FileResource fileResource = null;
+        try {
+                fileResource = minioService.metadataObject(path, id);
+        }catch (Exception e){}
+        if (fileResource == null){
+            throw new DataNotFoundException("Ресурс не найден");
+        }
         if (path.endsWith("/")) {
             minioService.removeFolderBatch(path);
         } else {

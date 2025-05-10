@@ -31,6 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -207,6 +208,7 @@ public class AuthControllerTest {
     @Test
     void shouldBeOutIsCorrect() throws Exception {
         mockMvc.perform(post("/api/auth/sign-out")
+                        .with(user(User.builder().username("Username").role(Role.USER).id(1).password("Password").build()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(Void.class)))
                 .andExpect(status().isNoContent());

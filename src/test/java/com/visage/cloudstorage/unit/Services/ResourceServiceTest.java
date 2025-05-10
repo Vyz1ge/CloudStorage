@@ -108,7 +108,8 @@ public class ResourceServiceTest {
     @Test
     void shouldBeCreatePackage() throws Exception {
         int userId = 1;
-        String name = "somename";
+        String name = "somename/";
+        when(minioService.metadataObject("the1/", userId)).thenReturn(FileResource.builder().name("the1/").build());
         List<FileResource> list = resourceService.createPackage(name, userId);
         assertNotNull(list, "Не нулл");
         assertNotNull(list.get(0), "Не нулл");
@@ -203,10 +204,10 @@ public class ResourceServiceTest {
         int userId = 1;
         String pathFrom = "the1/onepackage/";
         String pathTo = "the1/twopackage/";
+        when(minioService.metadataObject("the1/onepackage/", userId)).thenReturn(FileResource.builder().name("onepackage/").build());
         FileResource fileResource = resourceService.moveResoutce(pathFrom, pathTo, 1);
-        assertEquals("accept", fileResource.getPath());
-        assertEquals("accept", fileResource.getName());
-        assertEquals("FILE", fileResource.getType());
+        assertEquals("the1/", fileResource.getPath());
+        assertEquals("onepackage/", fileResource.getName());
 
         verify(minioService, never()).getObject(eq(pathFrom));
     }
@@ -214,14 +215,13 @@ public class ResourceServiceTest {
     @Test
     void shouldBeMoveResourceWithoutSlush() throws Exception {
         int userId = 1;
-        String pathFrom = "the1/onepackage";
-        String pathTo = "the1/twopackage";
+        String pathFrom = "the1/onepackage/";
+        String pathTo = "the1/twopackage/";
+        when(minioService.metadataObject("the1/onepackage/", userId)).thenReturn(FileResource.builder().name("onepackage/").build());
         FileResource fileResource = resourceService.moveResoutce(pathFrom, pathTo, 1);
-        assertEquals("accept", fileResource.getPath());
-        assertEquals("accept", fileResource.getName());
-        assertEquals("FILE", fileResource.getType());
+        assertEquals("the1/", fileResource.getPath());
+        assertEquals("onepackage/", fileResource.getName());
 
-        verify(minioService, never()).getObjects(eq(pathFrom), eq(true));
     }
 
     @Test

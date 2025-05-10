@@ -2,6 +2,7 @@ package com.visage.cloudstorage.Services;
 
 import com.visage.cloudstorage.Model.FileResource;
 import io.minio.*;
+import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,10 +60,11 @@ public class MinioService {
     }
 
     public FileResource metadataObject(String path, Integer userId) throws Exception {
-        StatObjectResponse statObjectResponse = minioClient.statObject(StatObjectArgs.builder()
-                .bucket(bucketName)
-                .object(path)
-                .build());
+        StatObjectResponse statObjectResponse = null;
+            statObjectResponse = minioClient.statObject(StatObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(path)
+                    .build());
         int idx = path.indexOf("/");
         String name;
         if (idx == -1) {

@@ -54,6 +54,13 @@ public class ExceptionsHandler {
 
     }
 
+    @ExceptionHandler(ParentFileIsAlreadyExists.class)
+    public ResponseEntity<?> parentNotExists(){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.builder()
+                .status(404)
+                .message("Родительской папки не существует")
+                .build());
+    }
 
 
 }

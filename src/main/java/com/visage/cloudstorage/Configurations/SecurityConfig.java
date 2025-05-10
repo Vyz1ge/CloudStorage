@@ -45,17 +45,30 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/api/user/**",
                                 "/swagger-ui.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"message\":\"Пользователь не авторизован\",\"status\":401}");
+                        })
+                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/sign-out")
-                        .logoutSuccessHandler(((request, response, authentication) -> response
-                                .setStatus(HttpServletResponse.SC_NO_CONTENT)))
+                        .logoutSuccessHandler(((request, response, authentication) -> {
+                            if (authentication == null) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json;charset=UTF-8");
+                                response.getWriter().write("{\"message\":\"Пользователь не авторизован\",\"status\":401}");
+                            } else {
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            }
+                        }))
                 )
-
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 );
