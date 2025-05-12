@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.visage.cloudstorage.integration.Controllers.ResourceControllerTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.752 s -- in com.visage.cloudstorage.integration.Controllers.ResourceControllerTest

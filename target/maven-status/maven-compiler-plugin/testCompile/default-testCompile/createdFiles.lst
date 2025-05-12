@@ -1,0 +1,7 @@
+com\visage\cloudstorage\integration\Controllers\ConfigMinio.class
+com\visage\cloudstorage\integration\Services\UserServiceTest.class
+com\visage\cloudstorage\unit\Services\ResourceServiceTest.class
+com\visage\cloudstorage\integration\Services\AuthServiceTest.class
+com\visage\cloudstorage\integration\Controllers\AuthControllerTest.class
+com\visage\cloudstorage\unit\Services\UserServiceTest.class
+com\visage\cloudstorage\integration\Controllers\ResourceControllerTest.class

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.visage.cloudstorage.integration.Controllers.AuthControllerTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.22 s -- in com.visage.cloudstorage.integration.Controllers.AuthControllerTest

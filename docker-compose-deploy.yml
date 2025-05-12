@@ -1,0 +1,76 @@
+services:
+  psql:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - storage-net
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniominio
+    command: server /data --console-address ":9090"
+    networks:
+      - storage-net
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - storage-net
+    restart: unless-stopped
+
+  cloudstorage_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cloudstorage_container
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://psql:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_FLYWAY_URL: jdbc:postgresql://psql:5432/postgres
+      SPRING_FLYWAY_USER: postgres
+      SPRING_FLYWAY_PASSWORD: postgres
+      SPRING_MINIO_URL: http://minio:9000
+      SPRING_MINIO_ACCESS-KEY: minio
+      SPRING_MINIO_SECRET-KEY: miniominio
+      SPRING_MINIO_BUCKET-NAME: name
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      - psql
+      - minio
+      - redis
+    networks:
+      - storage-net
+    restart: unless-stopped
+
+networks:
+  storage-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DiffGenerationConfig">
+    <option name="snapshotDb" value="false" />
+    <option name="snapshotDbValue" value="b0710c33-6269-4987-ade6-bf4638ecf28d" />
+    <option name="snapshotModelValue" value="CloudStorage:CloudStorage" />
+    <option name="sourceDbValue" value="b0710c33-6269-4987-ade6-bf4638ecf28d" />
+    <option name="sourceDiffType" value="DB" />
+    <option name="sourceModelValue" value="CloudStorage:CloudStorage" />
+    <option name="targetDbValue" value="b0710c33-6269-4987-ade6-bf4638ecf28d" />
+  </component>
+</project>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MinioService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CloudStorage</a> &gt; <a href="index.source.html" class="el_package">com.visage.cloudstorage.Services</a> &gt; <span class="el_source">MinioService.java</span></div><h1>MinioService.java</h1><pre class="source lang-java linenums">package com.visage.cloudstorage.Services;
+
+import com.visage.cloudstorage.Model.FileResource;
+import io.minio.*;
+import io.minio.errors.*;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
+import io.minio.messages.Item;
+import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class MinioService {
+
+    private final MinioClient minioClient;
+
+<span class="fc" id="L27">    private String bucketName = &quot;name&quot;;</span>
+
+<span class="fc" id="L29">    public MinioService(MinioClient minioClient) {</span>
+<span class="fc" id="L30">        this.minioClient = minioClient;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Profile(&quot;!test&quot;)
+    @PostConstruct
+    public void createBucketForUser() throws Exception {
+<span class="fc" id="L36">        boolean exists = minioClient.bucketExists(BucketExistsArgs.builder()</span>
+<span class="fc" id="L37">                .bucket(bucketName)</span>
+<span class="fc" id="L38">                .build());</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (!exists) {</span>
+<span class="fc" id="L41">            minioClient.makeBucket(MakeBucketArgs.builder()</span>
+<span class="fc" id="L42">                    .bucket(bucketName)</span>
+<span class="fc" id="L43">                    .build());</span>
+        }
+<span class="fc" id="L45">    }</span>
+
+    public InputStream getObject(String path) throws Exception {
+<span class="fc" id="L48">        return minioClient.getObject(GetObjectArgs.builder()</span>
+<span class="fc" id="L49">                .bucket(bucketName)</span>
+<span class="fc" id="L50">                .object(path)</span>
+<span class="fc" id="L51">                .build());</span>
+    }
+
+    public Iterable&lt;Result&lt;Item&gt;&gt; getObjects(String path, boolean recursive) {
+<span class="fc" id="L55">        return minioClient.listObjects(ListObjectsArgs.builder()</span>
+<span class="fc" id="L56">                .bucket(bucketName)</span>
+<span class="fc" id="L57">                .prefix(path)</span>
+<span class="fc" id="L58">                .recursive(recursive)</span>
+<span class="fc" id="L59">                .build());</span>
+    }
+
+    public FileResource metadataObject(String path, Integer userId) throws Exception {
+<span class="fc" id="L63">        StatObjectResponse statObjectResponse = null;</span>
+<span class="fc" id="L64">            statObjectResponse = minioClient.statObject(StatObjectArgs.builder()</span>
+<span class="fc" id="L65">                    .bucket(bucketName)</span>
+<span class="fc" id="L66">                    .object(path)</span>
+<span class="fc" id="L67">                    .build());</span>
+<span class="fc" id="L68">        int idx = path.indexOf(&quot;/&quot;);</span>
+        String name;
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (idx == -1) {</span>
+<span class="nc" id="L71">            name = path;</span>
+        } else {
+<span class="fc" id="L73">            name = path.substring(0, idx + 1);</span>
+        }
+
+
+        String type;
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (statObjectResponse != null) {</span>
+<span class="fc" id="L79">            type = statObjectResponse.contentType();</span>
+        }else {
+<span class="nc" id="L81">            type = null;</span>
+        }
+<span class="fc" id="L83">        long size = 0;</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (type != null) {</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (type.equals(&quot;FILE&quot;)) {</span>
+<span class="nc" id="L86">                size = statObjectResponse.size();</span>
+            }
+        }
+<span class="fc" id="L89">        return FileResource.builder()</span>
+<span class="fc" id="L90">                .path(path)</span>
+<span class="fc" id="L91">                .size(size)</span>
+<span class="fc" id="L92">                .type(type)</span>
+<span class="fc" id="L93">                .name(name)</span>
+<span class="fc" id="L94">                .build();</span>
+    }
+
+    public void removeObject(String path) throws Exception {
+<span class="nc" id="L98">        minioClient.removeObject(RemoveObjectArgs.builder()</span>
+<span class="nc" id="L99">                .bucket(bucketName)</span>
+<span class="nc" id="L100">                .object(path)</span>
+<span class="nc" id="L101">                .build());</span>
+<span class="nc" id="L102">    }</span>
+
+    public void removeFolderBatch(String folderPrefix) throws Exception {
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (!folderPrefix.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L106">            folderPrefix += &quot;/&quot;;</span>
+        }
+
+<span class="fc" id="L109">        List&lt;DeleteObject&gt; toDelete = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L110">        Iterable&lt;Result&lt;Item&gt;&gt; objects = minioClient.listObjects(</span>
+<span class="fc" id="L111">                ListObjectsArgs.builder()</span>
+<span class="fc" id="L112">                        .bucket(bucketName)</span>
+<span class="fc" id="L113">                        .prefix(folderPrefix)</span>
+<span class="fc" id="L114">                        .recursive(true)</span>
+<span class="fc" id="L115">                        .build()</span>
+        );
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (Result&lt;Item&gt; result : objects) {</span>
+<span class="fc" id="L118">            toDelete.add(new DeleteObject(result.get().objectName()));</span>
+<span class="fc" id="L119">        }</span>
+
+<span class="fc" id="L121">        Iterable&lt;Result&lt;DeleteError&gt;&gt; errors = minioClient.removeObjects(</span>
+<span class="fc" id="L122">                RemoveObjectsArgs.builder()</span>
+<span class="fc" id="L123">                        .bucket(bucketName)</span>
+<span class="fc" id="L124">                        .objects(toDelete)</span>
+<span class="fc" id="L125">                        .build()</span>
+        );
+
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        for (Result&lt;DeleteError&gt; err : errors) {</span>
+<span class="nc" id="L129">            System.err.println(&quot;Unable to delete object &quot; +</span>
+<span class="nc" id="L130">                    err.get().objectName() + &quot;: &quot; + err.get().message());</span>
+<span class="nc" id="L131">        }</span>
+<span class="fc" id="L132">    }</span>
+
+    public void upload(InputStream input, String completePath, MultipartFile file) throws Exception {
+<span class="fc" id="L135">        String objectName = completePath + file.getOriginalFilename();</span>
+<span class="fc" id="L136">        minioClient.putObject(PutObjectArgs.builder()</span>
+<span class="fc" id="L137">                .bucket(bucketName)</span>
+<span class="fc" id="L138">                .object(objectName)</span>
+<span class="fc" id="L139">                .stream(input, file.getSize(), -1)</span>
+<span class="fc" id="L140">                .contentType(file.getContentType())</span>
+<span class="fc" id="L141">                .build());</span>
+<span class="fc" id="L142">    }</span>
+
+    public void copy(String oldCompletePath, String newCompletePath) throws Exception {
+<span class="nc" id="L145">        minioClient.copyObject(CopyObjectArgs.builder()</span>
+<span class="nc" id="L146">                .bucket(bucketName)</span>
+<span class="nc" id="L147">                .object(newCompletePath)</span>
+<span class="nc" id="L148">                .source(CopySource.builder()</span>
+<span class="nc" id="L149">                        .bucket(bucketName)</span>
+<span class="nc" id="L150">                        .object(oldCompletePath)</span>
+<span class="nc" id="L151">                        .build())</span>
+<span class="nc" id="L152">                .build());</span>
+<span class="nc" id="L153">    }</span>
+
+    public void createDirectory(String path) throws Exception {
+<span class="fc" id="L156">        minioClient.putObject(PutObjectArgs.builder()</span>
+<span class="fc" id="L157">                .bucket(bucketName)</span>
+<span class="fc" id="L158">                .object(path)</span>
+<span class="fc" id="L159">                .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)</span>
+<span class="fc" id="L160">                .build());</span>
+<span class="fc" id="L161">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

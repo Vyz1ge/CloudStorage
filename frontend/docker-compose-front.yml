@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      dockerfile: Dockerfile
+    container_name: cloud-storage-frontend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - NODE_ENV=production

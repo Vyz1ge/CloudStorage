@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResourceController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CloudStorage</a> &gt; <a href="index.source.html" class="el_package">com.visage.cloudstorage.Controllers</a> &gt; <span class="el_source">ResourceController.java</span></div><h1>ResourceController.java</h1><pre class="source lang-java linenums">package com.visage.cloudstorage.Controllers;
+
+import com.visage.cloudstorage.Model.ErrorResponse;
+import com.visage.cloudstorage.Model.FileResource;
+import com.visage.cloudstorage.Model.User;
+import com.visage.cloudstorage.Services.ResourceService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api&quot;)
+@RequiredArgsConstructor
+public class ResourceController {
+
+    private final ResourceService resourceService;
+
+    @GetMapping(&quot;/directory&quot;)
+    public ResponseEntity&lt;?&gt; lookAllResource(@RequestParam(&quot;path&quot;) String path, @AuthenticationPrincipal User user) {
+<span class="fc" id="L25">        validatePath(path);</span>
+<span class="fc" id="L26">        return ResponseEntity.ok().body(resourceService.resources(user.getId(), path));</span>
+    }
+
+
+    @PostMapping(&quot;/directory&quot;)
+    public ResponseEntity&lt;?&gt; createPackage(@RequestParam(&quot;path&quot;) String path, @AuthenticationPrincipal User user) {
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (!path.isEmpty()) {</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">            if (!path.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L34">                return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="nc" id="L35">                        .body(ErrorResponse.builder().message(&quot;Невалидный или отсутствующий путь&quot;).status(400).build());</span>
+            }
+        }
+<span class="fc" id="L38">        return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.createPackage(path, user.getId()));</span>
+
+    }
+
+    @PostMapping(&quot;/resource&quot;)
+    public ResponseEntity&lt;FileResource&gt; uploadFile(@RequestPart(&quot;object&quot;) List&lt;MultipartFile&gt; files,
+                                                   @AuthenticationPrincipal User user,
+                                                   @RequestParam String path) {
+<span class="fc" id="L46">        return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.createFile(files, user.getId(), path));</span>
+    }
+
+    @GetMapping(&quot;/resource/download&quot;)
+    public ResponseEntity&lt;?&gt; downloadFile(@RequestParam(&quot;path&quot;) String path,
+                                          @AuthenticationPrincipal User user) {
+<span class="fc" id="L52">        validatePath(path);</span>
+<span class="fc" id="L53">        InputStreamResource object = null;</span>
+<span class="fc" id="L54">        object = resourceService.downloadResource(path, user.getId());</span>
+<span class="fc" id="L55">        ContentDisposition contentDisposition = ContentDisposition.attachment().filename(path).build();</span>
+<span class="fc" id="L56">        return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM)</span>
+<span class="fc" id="L57">                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())</span>
+<span class="fc" id="L58">                .body(object);</span>
+    }
+
+    @GetMapping(&quot;/resource/move&quot;)
+    public ResponseEntity&lt;?&gt; move(@RequestParam(&quot;from&quot;) String from,
+                                  @RequestParam(&quot;to&quot;) String to,
+                                  @AuthenticationPrincipal User user) {
+<span class="nc" id="L65">        validatePath(to);</span>
+<span class="nc" id="L66">        validatePath(from);</span>
+<span class="nc" id="L67">        return ResponseEntity.ok().body(resourceService.moveResoutce(from, to, user.getId()));</span>
+    }
+
+    @DeleteMapping(&quot;/resource&quot;)
+    public ResponseEntity&lt;?&gt; delete(@RequestParam(&quot;path&quot;) String path,
+                                    @AuthenticationPrincipal User user) {
+<span class="nc" id="L73">        validatePath(path);</span>
+<span class="nc" id="L74">        System.out.println(resourceService.deleteResource(path, user.getId()));</span>
+<span class="nc" id="L75">        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();</span>
+    }
+
+    @GetMapping(&quot;/resource/search&quot;)
+    public ResponseEntity&lt;?&gt; search(@RequestParam(&quot;query&quot;) String query,
+                                    @AuthenticationPrincipal User user) {
+<span class="nc" id="L81">        validatePath(query);</span>
+<span class="nc" id="L82">        return ResponseEntity.ok().body(resourceService.searchResource(query, user.getId()));</span>
+    }
+
+    @GetMapping(&quot;/resource&quot;)
+    public ResponseEntity&lt;?&gt; lookThisResource(@RequestParam(&quot;path&quot;) String path, @AuthenticationPrincipal User user) {
+<span class="fc" id="L87">        validatePath(path);</span>
+<span class="fc" id="L88">        return ResponseEntity.ok().body(resourceService.resource(user.getId(), path));</span>
+    }
+
+    private ResponseEntity&lt;?&gt; validatePath(String path) {
+<span class="pc bpc" id="L92" title="4 of 8 branches missed.">        if (path.equals(&quot;.&quot;) || path.equals(&quot;..&quot;) || path.contains(&quot;../&quot;) || path.contains(&quot;..\\&quot;)) {</span>
+<span class="nc" id="L93">            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="nc" id="L94">                    .body(ErrorResponse.builder()</span>
+<span class="nc" id="L95">                            .message(&quot;Невалидный или отсутствующий путь&quot;)</span>
+<span class="nc" id="L96">                            .status(400)</span>
+<span class="nc" id="L97">                            .build());</span>
+        }
+<span class="fc" id="L99">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
