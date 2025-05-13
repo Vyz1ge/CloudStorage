@@ -9,3 +9,6 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     environment:
       - NODE_ENV=production
+
+
+###  https://github.com/MrShoffen/roadmap-cloud-storage-frontend
